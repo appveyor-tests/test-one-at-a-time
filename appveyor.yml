@@ -1,0 +1,72 @@
+environment:  
+  matrix:
+    
+###########################
+# A list of test projects, each project is described by:
+#    -PROJECT_REPO
+#    -PROJECT_NAME (only if differenet from PROJECT_REPO name )
+#    -APPVEYOR_BUILD_WORKER_IMAGE
+###########################  
+
+  - PROJECT_REPO: psgallery-test
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015    
+    
+    
+clone_script:
+- cmd: git clone https://github.com/appveyor-tests/%PROJECT_REPO% %APPVEYOR_BUILD_FOLDER%
+- sh: git clone https://github.com/appveyor-tests/$PROJECT_REPO $APPVEYOR_BUILD_FOLDER
+
+# if build is not built automatically, run build script
+build_script:
+- cmd: powershell .\build.ps1
+- sh: bash ./build.sh
+
+for:
+################################################################
+# project-specific settings not scripted in project's build.ps1
+################################################################
+
+#test project: psgallery-test VS 2015
+-
+  matrix:
+    only:
+      - PROJECT_REPO: psgallery-test
+        APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017     
+  environment:
+    psg_api_key:
+      secure: yG4Zx5pchfapCdOfL5iCh9WvcDpGTyhdlPZbjDCwy55apwGNSmg3zDSq0JZBEA8w
+  
+  skip_commits:
+    message: /ubuntu-only|vs2015-only|vs2013-only/  
+    
+     
+##########################################################################
+#    global filters through skip_commits mechanism
+##########################################################################
+-
+  matrix:
+    only:
+      - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+  skip_commits:
+    message: /vs2017-only|vs2015-only|vs2013-only/
+
+-
+  matrix:
+    only:
+      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+  skip_commits:
+    message: /ubuntu-only|vs2015-only|vs2013-only/
+    
+-
+  matrix:
+    only:
+      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+  skip_commits:
+    message: /ubuntu-only|vs2017-only|vs2013-only/
+    
+-
+  matrix:
+    only:
+      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+  skip_commits:
+    message: /ubuntu-only|vs2017-only|vs2015-only/
